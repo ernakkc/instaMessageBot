@@ -42,3 +42,14 @@ def save_account_config(file_path: str, config: Dict[str, Any]) -> None:
     """
     with open(file_path, 'w') as file:
         json.dump(config, file, indent=4)
+        
+        
+def isHaveProxy(account: Dict[str, Any]) -> bool:
+    """
+    Check if the account has a proxy.
+
+    :param account: A dictionary containing account configuration.
+    :return: True if the account has a proxy, False otherwise.
+    """
+    return 'proxy' in account and bool(account['proxy'])
+
