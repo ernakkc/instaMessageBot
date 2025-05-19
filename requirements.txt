@@ -2,3 +2,4 @@ selenium
 webdriver-manager
 json
 PyQt5
+random-user-agent

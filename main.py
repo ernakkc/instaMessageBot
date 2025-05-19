@@ -5,6 +5,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
 from utils.accountConf import load_account_config, isHaveProxy
+from utils.browser import Browser
+from utils.targetData import isTargetDataExist, getTargetData, setTargetData
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -12,7 +14,6 @@ class MainWindow(QMainWindow):
         # Settings
         self.accounts = load_account_config("accounts.json")
         self.accountsSize = len(self.accounts)
-        
     
         self.setWindowTitle("Instagram Messaging App")
         # self.windowIcon = QIcon("icon.png")
@@ -98,11 +99,11 @@ class MainWindow(QMainWindow):
         self.messages.setContentsMargins(0, 0, 0, 0)
         self.messages.setSizeConstraint(QLayout.SetMinimumSize)
         self.messages.addWidget(QLabel("Mesaj 1:"))
-        self.messages.addWidget(QLineEdit())
+        self.messages.addWidget(QTextEdit())
         self.messages.addWidget(QLabel("Mesaj 2:"))
-        self.messages.addWidget(QLineEdit())
+        self.messages.addWidget(QTextEdit())
         self.messages.addWidget(QLabel("Mesaj 3:"))
-        self.messages.addWidget(QLineEdit())
+        self.messages.addWidget(QTextEdit())
         self.right_layout.addLayout(self.messages)
         
         self.randomButton = QCheckBox("Mesajları Rastgele Gönder \n(Seçilmezse 1. Mesaj Gönderilir)")
@@ -163,6 +164,23 @@ class MainWindow(QMainWindow):
         Calisma_Label.setStyleSheet("font-size: 20px; font-weight: bold;")
         self.runtime_layout.addWidget(Calisma_Label)
         
+        usernamesLabel = QLabel("Hedef Kullanıcı İsim(ler)i\nHer birini Enter ile ayırın\n Başında @ işareti olmasına gerek yoktur")
+        usernamesLabel.setAlignment(Qt.AlignCenter)
+        usernamesLabel.setStyleSheet("font-size: 15px; font-weight: bold;")
+        self.runtime_layout.addWidget(usernamesLabel)
+        self.usernamesTextEdit = QTextEdit()
+        self.usernamesTextEdit.setStyleSheet("font-size: 10px; font-weight: bold; border-radius: 5px; padding: 5px; border: 1px solid black;")
+        self.usernamesTextEdit.setFixedWidth(300)
+        self.runtime_layout.addWidget(self.usernamesTextEdit)
+        self.usernamesTextEdit.setPlaceholderText("Kullanıcı Adı Giriniz")
+        self.usernamesTextEdit.setAlignment(Qt.AlignLeft)
+                
+        self.startButton = QPushButton("Başlat")
+        self.startButton.setStyleSheet("background-color: lightgreen; font-size: 15px; font-weight: bold; border-radius: 5px; padding: 5px; border: 1px solid black;")
+        self.startButton.clicked.connect(self.start)
+        self.runtime_layout.addWidget(self.startButton)
+        
+        
         
     def selectAll(self):
         for element in self.listItems:
@@ -175,6 +193,15 @@ class MainWindow(QMainWindow):
             checkbox = element.itemAt(0).widget()
             if isinstance(checkbox, QCheckBox):
                 checkbox.setChecked(False)
+
+    def start(self):
+        browser1 = Browser(self.accounts[0]["proxy"], self.accounts[0]["id"], self.accounts[0]["username"], self.accounts[0]["password"], "nur_pkw")
+        browser1.start()
+        if browser1.isPrivateAccount():
+            browser1.sendRequest()
+        else:
+            followers = browser1.getFollowers()
+
 
     def on_button_click(self):
         QMessageBox.information(self, "Button Clicked", "You clicked the button!")

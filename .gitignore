@@ -5,6 +5,10 @@ accounts.json
 .vscode/
 .vscode-test/
 
+# Browser Data
+webDataFolder/*
+cookies/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
