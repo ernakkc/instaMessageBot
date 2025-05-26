@@ -1,5 +1,9 @@
 import os
 
+from time import sleep
+
+from random import randint
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -16,8 +20,8 @@ from random_user_agent.user_agent import UserAgent
 from utils.targetData import isTargetDataExist, getTargetData, setTargetData
 
 class Browser:
-    def __init__(self, proxy, accountID, username, password, targetUsername):
-        self.targetUsername = targetUsername
+    def __init__(self, proxy, accountID, username, password):
+        self.targetUsername = None
         self.driver = None
         self.wait = 20
         self.proxy = proxy
@@ -107,7 +111,11 @@ class Browser:
             self.save_cookies()
             self.driver.get(self.baseUrl)
             
-    def isPrivateAccount(self):
+    def isPrivateAccount(self, username=None):
+        if username:
+            self.targetUsername = username
+            self.profileUrl = "https://www.instagram.com/{}/".format(self.targetUsername)
+            self.followersUrl = "https://www.instagram.com/{}/followers/".format(self.targetUsername)
         try:
             self.driver.get(self.profileUrl)
             self.wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(.,'This account is private')]")))
@@ -152,7 +160,47 @@ class Browser:
                 setTargetData(self.targetUsername, data)
                 
     def getFollowers(self):
-        pass
+        self.driver.get(self.followersUrl)
+        items = self.wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(., 'followers')]")))
+        self.followersCount = int(items.text.strip().replace("followers", "").replace(",", ""))
+        print(f"Followers count of {self.targetUsername}: {self.followersCount}")
+        items.click()
+        action = ActionChains(self.driver)
+        sleep(1)
+        for _ in range(9):
+            action.send_keys(Keys.TAB).perform()
+        for _ in range(20):
+            action.send_keys(Keys.END).perform()
+            sleep(0.5)
+        
+        followers_list = []
+        followers = items.find_elements(By.XPATH, "//a[@role='link' and starts-with(@href, '/')]/div//span")
+        for follower in followers:
+            follower =  follower.text.strip()
+            if follower == "" or follower.isdigit():
+                continue
+            print(follower)
+            if len(followers_list) >= 50:
+                break
+            followers_list.append(follower)
+        print(f"Followers of {self.targetUsername}: {followers_list}")
+        return followers_list
+    
+    def sendMessage(self, username , message):
+        self.driver.get(f"https://www.instagram.com/{username}/")
+        message_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Mess')]")))
+        message_button.click()
+        sleep(3)
+        
+        action = ActionChains(self.driver)
+        for char in message:
+            action.send_keys(char)
+            sleep(randint(50, 150) / 1000)
+        action.perform()
+        action.send_keys(Keys.RETURN).perform()
+        sleep(2)
+        print(f"Mesaj gönderildi: {username}\nMesaj: {message}")
+        return True
                 
     def restart(self):
         self.quit()
