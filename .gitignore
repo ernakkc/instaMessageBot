@@ -1,3 +1,14 @@
+# User Configuration
+accounts.json
+
+# VS Code
+.vscode/
+.vscode-test/
+
+# Browser Data
+webDataFolder/*
+cookies/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
